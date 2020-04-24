@@ -1,0 +1,83 @@
+ΠΑΝΤΑ ΟΤΑΝ ΞΕΚΙΝΑΣ
+
+~/hadoop/sbin/start-dfs.sh
+
+~/hadoop/sbin/start-yarn.sh
+
+ΠΑΝΤΑ ΟΤΑΝ ΤΕΛΕΙΩΝΕΙΣ
+
+~/hadoop/sbin/stop-dfs.sh
+
+~/hadoop/sbin/stop-yarn.sh
+
+#Μετραω Χρονους στο hadoop με τις παρακατω εντολες ξεκιναει και σταματαει
+#START
+~/hadoop/sbin/mr-jobhistory-daemon.sh start historyserver
+#STOP
+~/hadoop/sbin/mr-jobhistory-daemon.sh stop historyserver
+
+#Mεταφορα του αρχειου στο hdfs
+απο εμας ->στο hdfs
+~/hadoop/bin/hadoop fs  -put ~/source/dblp-ref  /user/user/input
+απο hdfs -> σε εμας
+~/hadoop/bin/hadoop fs -get /user/user/pyout ~/source/allpyoutsfromcluster
+
+#Εμφανιση αρχειων στο hdfs
+
+~/hadoop/bin/hadoop fs -ls input
+
+#Διαγραφη αρχειων στο hdfs 
+
+~/hadoop/bin/hadoop fs -rm -r /user/user/pyout
+(διαγραφη αρχειων στο cmd line linux: rm -r filname)
+
+#Δημιουργια φακελων στο hdfs
+
+~/hadoop/bin/hadoop fs -mkdir /user/user/input
+
+
+#Important! Delete output before running again!
+
+
+#Eμφανιση των πρωτων 100 σειρων σε ενα μεγαλο αρχειο με ονομα dblp-ref-0.json
+
+ head -n 100 ./dblp-ref-0.json
+
+#Για να κατεβασω αρχεια ή να τα δω μεσο του browser σε οποιοδηποτε υπολογιστη
+
+python3 -m http.server 
+
+#και μετα παταω στον browser http://server-ip:8000/
+
+1) κανει map and reduce απο python 
+
+echo "foo foo quux labs foo bar quux" | /home/user/source/mapper.py | sort -k1,1 | /home/user/source/reducer.py
+
+2) ξεκιναει το hadoop  το πρωτο σκελος, το δευτερο σκελος τρεχει το hadoop streaming ,(βρισκομαι στον φακελο που βρισκεται o mapper and reducer εδω παταω την εντολη)
+
+~/hadoop/bin/hadoop jar ~/hadoop/share/hadoop/tools/lib/hadoop-streaming-*.jar -files mapper.py,reducer.py -mapper mapper.py -reducer reducer.py -input input -output pyout
+
+
+3α) Τελικη εντολη με default τιμη στο reducetask (default =1)
+
+~/hadoop/bin/hadoop jar ~/hadoop/share/hadoop/tools/lib/hadoop-streaming-*.jar -files mapper.py,reducer.py -mapper mapper.py -reducer reducer.py -input input/dblp-ref -output pyoutfor1
+
+3β) Τελικη εντολη με reducetask οσο διαλεξουμε
+
+~/hadoop/bin/hadoop jar ~/hadoop/share/hadoop/tools/lib/hadoop-streaming-*.jar -files mapper.py,reducer.py -mapper mapper.py -reducer reducer.py -input input/dblp-ref -output pyout  -numReduceTasks 2
+
+
+4)κανω map and reduce τοπικα 
+
+cat ~/input/problem/dblp-ref/* | ./mapper.py | \sort | ./reducer.py
+
+5α) κανω hadoop-2.10.0 τοπικα με default τιμη στο reducetask (default =1)
+~/hadoop-2.10.0/bin/hadoop jar ~/hadoop-2.10.0/share/hadoop/tools/lib/hadoop-streaming-*.jar -files mapper.py,reducer.py -mapper mapper.py -reducer reducer.py -input  ~/input/problem/dblp-ref -output pyout
+
+5β) κανω hadoop-2.10.0 τοπικα με reducetask οσο διαλεξουμε
+
+~/hadoop-2.10.0/bin/hadoop jar ~/hadoop-2.10.0/share/hadoop/tools/lib/hadoop-streaming-*.jar -files mapper.py,reducer.py -mapper mapper.py -reducer reducer.py -input  ~/input/problem/dblp-ref -output pyout -numReduceTasks 2
+
+6) namenode is in safemode , δεν ξερουμε πως εγινε αλλα μας εβγαζε το παρακατω error και το ξεπερασαμε με αυτο
+
+~/hadoop/bin/hadoop dfsadmin -safemode leave
